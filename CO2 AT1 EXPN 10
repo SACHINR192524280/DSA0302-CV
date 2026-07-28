@@ -1,0 +1,101 @@
+# Experiment 10
+# Frequency Domain High-Pass Filter
+
+from google.colab import files
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# -----------------------------
+# Upload Image
+# -----------------------------
+uploaded = files.upload()
+
+image_path = list(uploaded.keys())[0]
+
+# Read image as grayscale
+img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+# -----------------------------
+# Fourier Transform
+# -----------------------------
+dft = np.fft.fft2(img)
+dft_shift = np.fft.fftshift(dft)
+
+# Magnitude Spectrum
+magnitude = 20 * np.log(np.abs(dft_shift) + 1)
+
+# -----------------------------
+# Create Ideal High-Pass Filter
+# -----------------------------
+rows, cols = img.shape
+crow, ccol = rows // 2, cols // 2
+
+mask = np.ones((rows, cols), np.uint8)
+
+radius = 40   # Cut-off frequency
+
+for i in range(rows):
+    for j in range(cols):
+        if (i - crow) ** 2 + (j - ccol) ** 2 <= radius ** 2:
+            mask[i, j] = 0
+
+# Apply mask
+filtered_dft = dft_shift * mask
+
+# -----------------------------
+# Inverse Fourier Transform
+# -----------------------------
+inverse_shift = np.fft.ifftshift(filtered_dft)
+inverse_img = np.fft.ifft2(inverse_shift)
+filtered_image = np.abs(inverse_img)
+
+filtered_image = np.clip(filtered_image, 0, 255).astype(np.uint8)
+
+# -----------------------------
+# Display Images
+# -----------------------------
+plt.figure(figsize=(14,8))
+
+plt.subplot(2,2,1)
+plt.imshow(img, cmap='gray')
+plt.title("Original Image")
+plt.axis('off')
+
+plt.subplot(2,2,2)
+plt.imshow(magnitude, cmap='gray')
+plt.title("Magnitude Spectrum")
+plt.axis('off')
+
+plt.subplot(2,2,3)
+plt.imshow(mask, cmap='gray')
+plt.title("Ideal High-Pass Filter Mask")
+plt.axis('off')
+
+plt.subplot(2,2,4)
+plt.imshow(filtered_image, cmap='gray')
+plt.title("High-Pass Filtered Image")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# -----------------------------
+# Histograms
+# -----------------------------
+plt.figure(figsize=(10,4))
+
+plt.subplot(1,2,1)
+plt.hist(img.ravel(), bins=256, range=[0,256])
+plt.title("Original Histogram")
+
+plt.subplot(1,2,2)
+plt.hist(filtered_image.ravel(), bins=256, range=[0,256])
+plt.title("High-Pass Histogram")
+
+plt.tight_layout()
+plt.show()
+
+print("Ideal High-Pass Filter")
+print("----------------------")
+print("Cut-off Radius =", radius, "pixels")

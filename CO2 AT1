@@ -1,0 +1,92 @@
+from google.colab import files
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Upload image
+uploaded = files.upload()
+
+# Read uploaded image
+image_path = list(uploaded.keys())[0]
+
+# Read as grayscale
+img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+# Display Original Image
+plt.figure(figsize=(5,5))
+plt.imshow(img, cmap='gray')
+plt.title("Original Grayscale Image")
+plt.axis('off')
+plt.show()
+
+# ----------------------------
+# Convert to 4-bit Image (0-15)
+# ----------------------------
+img4 = img // 16
+
+L = 16   # Number of intensity levels (4-bit)
+
+# Step 1: Histogram
+hist = np.zeros(L, dtype=int)
+
+for pixel in img4.flatten():
+    hist[pixel] += 1
+
+# Step 2: Probability Distribution
+total_pixels = img4.size
+pdf = hist / total_pixels
+
+# Step 3: Cumulative Distribution Function
+cdf = np.cumsum(pdf)
+
+# Step 4: Transformation Function
+transform = np.floor((L - 1) * cdf).astype(np.uint8)
+
+# Step 5: Equalized Image
+equalized4 = transform[img4]
+
+# Convert back to 8-bit for display
+equalized8 = equalized4 * 17
+
+# Display Equalized Image
+plt.figure(figsize=(5,5))
+plt.imshow(equalized8, cmap='gray')
+plt.title("Histogram Equalized Image")
+plt.axis('off')
+plt.show()
+
+# ----------------------------
+# Display Histograms
+# ----------------------------
+
+plt.figure(figsize=(10,4))
+
+plt.subplot(1,2,1)
+plt.bar(range(L), hist)
+plt.title("Original 4-bit Histogram")
+plt.xlabel("Intensity")
+plt.ylabel("Frequency")
+
+hist_eq = np.zeros(L, dtype=int)
+
+for pixel in equalized4.flatten():
+    hist_eq[pixel] += 1
+
+plt.subplot(1,2,2)
+plt.bar(range(L), hist_eq)
+plt.title("Equalized Histogram")
+plt.xlabel("Intensity")
+plt.ylabel("Frequency")
+
+plt.tight_layout()
+plt.show()
+
+# Print Histogram Values
+print("Original Histogram:")
+print(hist)
+
+print("\nEqualized Histogram:")
+print(hist_eq)
+
+print("\nTransformation Function:")
+print(transform)

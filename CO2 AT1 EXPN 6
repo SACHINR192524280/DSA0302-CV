@@ -1,0 +1,85 @@
+# Experiment 6
+# Median Filter for Salt-and-Pepper Noise Removal
+
+from google.colab import files
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Upload Image
+uploaded = files.upload()
+
+# Read uploaded image
+image_path = list(uploaded.keys())[0]
+
+# Read image
+img = cv2.imread(image_path)
+
+# Convert to grayscale
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# -----------------------------------
+# Add Salt-and-Pepper Noise
+# -----------------------------------
+noisy = gray.copy()
+
+prob = 0.02  # Noise probability
+
+random = np.random.rand(*gray.shape)
+
+# Pepper noise
+noisy[random < prob] = 0
+
+# Salt noise
+noisy[random > 1 - prob] = 255
+
+# -----------------------------------
+# Apply Median Filter
+# -----------------------------------
+median_filtered = cv2.medianBlur(noisy, 3)
+
+# -----------------------------------
+# Display Images
+# -----------------------------------
+plt.figure(figsize=(15,5))
+
+plt.subplot(1,3,1)
+plt.imshow(gray, cmap='gray')
+plt.title("Original Image")
+plt.axis("off")
+
+plt.subplot(1,3,2)
+plt.imshow(noisy, cmap='gray')
+plt.title("Noisy Image")
+plt.axis("off")
+
+plt.subplot(1,3,3)
+plt.imshow(median_filtered, cmap='gray')
+plt.title("Median Filtered Image")
+plt.axis("off")
+
+plt.tight_layout()
+plt.show()
+
+# -----------------------------------
+# Display Histograms
+# -----------------------------------
+plt.figure(figsize=(15,4))
+
+plt.subplot(1,3,1)
+plt.hist(gray.ravel(), bins=256, range=[0,256])
+plt.title("Original Histogram")
+
+plt.subplot(1,3,2)
+plt.hist(noisy.ravel(), bins=256, range=[0,256])
+plt.title("Noisy Histogram")
+
+plt.subplot(1,3,3)
+plt.hist(median_filtered.ravel(), bins=256, range=[0,256])
+plt.title("Filtered Histogram")
+
+plt.tight_layout()
+plt.show()
+
+print("Median Filter Kernel Size: 3 × 3")
+print("Noise Type: Salt-and-Pepper")

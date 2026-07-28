@@ -1,0 +1,98 @@
+# Experiment 8
+# High-Boost Filtering
+
+from google.colab import files
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Upload Image
+uploaded = files.upload()
+
+# Read uploaded image
+image_path = list(uploaded.keys())[0]
+
+# Read image
+img = cv2.imread(image_path)
+
+# Convert to grayscale
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# -----------------------------------
+# Step 1: Blur the image
+# -----------------------------------
+blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+
+# -----------------------------------
+# Step 2: Create High-Pass Mask
+# -----------------------------------
+mask = cv2.subtract(gray, blurred)
+
+# -----------------------------------
+# Step 3: High-Boost Filtering
+# A = High-Boost Factor (A > 1)
+# -----------------------------------
+A = 1.8
+
+high_boost = cv2.addWeighted(gray, A, mask, 1, 0)
+
+# -----------------------------------
+# Display Images
+# -----------------------------------
+plt.figure(figsize=(16,4))
+
+plt.subplot(1,4,1)
+plt.imshow(gray, cmap='gray')
+plt.title("Original Image")
+plt.axis('off')
+
+plt.subplot(1,4,2)
+plt.imshow(blurred, cmap='gray')
+plt.title("Blurred Image")
+plt.axis('off')
+
+plt.subplot(1,4,3)
+plt.imshow(mask, cmap='gray')
+plt.title("High-Pass Mask")
+plt.axis('off')
+
+plt.subplot(1,4,4)
+plt.imshow(high_boost, cmap='gray')
+plt.title("High-Boost Image")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# -----------------------------------
+# Histograms
+# -----------------------------------
+plt.figure(figsize=(16,4))
+
+plt.subplot(1,4,1)
+plt.hist(gray.ravel(), bins=256, range=[0,256])
+plt.title("Original")
+
+plt.subplot(1,4,2)
+plt.hist(blurred.ravel(), bins=256, range=[0,256])
+plt.title("Blurred")
+
+plt.subplot(1,4,3)
+plt.hist(mask.ravel(), bins=256, range=[0,256])
+plt.title("Mask")
+
+plt.subplot(1,4,4)
+plt.hist(high_boost.ravel(), bins=256, range=[0,256])
+plt.title("High-Boost")
+
+plt.tight_layout()
+plt.show()
+
+# -----------------------------------
+# Print Information
+# -----------------------------------
+print("High-Boost Filtering")
+print("--------------------")
+print("High-Boost Factor (A):", A)
+print("\nFormula:")
+print("High-Boost Image = A × Original + (Original - Blurred)")

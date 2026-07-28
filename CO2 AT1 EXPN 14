@@ -1,0 +1,74 @@
+# Experiment 14
+# Region Growing Image Segmentation
+
+from google.colab import files
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Upload Image
+uploaded = files.upload()
+
+# Read uploaded image
+image_path = list(uploaded.keys())[0]
+
+# Read image in grayscale
+img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+# -----------------------------
+# Seed Point (change if needed)
+# -----------------------------
+seed = (img.shape[0] // 2, img.shape[1] // 2)
+
+# Intensity threshold
+threshold = 10
+
+# Output segmented image
+segmented = np.zeros_like(img, dtype=np.uint8)
+
+visited = np.zeros_like(img, dtype=bool)
+
+# Queue for region growing
+queue = [seed]
+seed_value = int(img[seed])
+
+# Region Growing
+while queue:
+    x, y = queue.pop(0)
+
+    if visited[x, y]:
+        continue
+
+    visited[x, y] = True
+
+    if abs(int(img[x, y]) - seed_value) <= threshold:
+        segmented[x, y] = 255
+
+        # 4-connected neighbours
+        for dx, dy in [(-1,0), (1,0), (0,-1), (0,1)]:
+            nx, ny = x + dx, y + dy
+
+            if 0 <= nx < img.shape[0] and 0 <= ny < img.shape[1]:
+                if not visited[nx, ny]:
+                    queue.append((nx, ny))
+
+# -----------------------------
+# Display Images
+# -----------------------------
+plt.figure(figsize=(10,5))
+
+plt.subplot(1,2,1)
+plt.imshow(img, cmap='gray')
+plt.title("Original Image")
+plt.axis("off")
+
+plt.subplot(1,2,2)
+plt.imshow(segmented, cmap='gray')
+plt.title("Region Growing Result")
+plt.axis("off")
+
+plt.tight_layout()
+plt.show()
+
+print("Seed Point:", seed)
+print("Threshold:", threshold)

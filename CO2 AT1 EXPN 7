@@ -1,0 +1,78 @@
+# Experiment 7
+# Image Sharpening Using Laplacian Filter
+
+from google.colab import files
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Upload Image
+uploaded = files.upload()
+
+# Read uploaded image
+image_path = list(uploaded.keys())[0]
+
+# Read image
+img = cv2.imread(image_path)
+
+# Convert to grayscale
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# -----------------------------------
+# Apply Laplacian Filter
+# -----------------------------------
+laplacian = cv2.Laplacian(gray, cv2.CV_64F)
+
+# Convert to uint8
+laplacian_abs = cv2.convertScaleAbs(laplacian)
+
+# Sharpen the image
+sharpened = cv2.addWeighted(gray, 1.0, laplacian_abs, 1.0, 0)
+
+# -----------------------------------
+# Display Images
+# -----------------------------------
+plt.figure(figsize=(15,5))
+
+plt.subplot(1,3,1)
+plt.imshow(gray, cmap='gray')
+plt.title("Original Image")
+plt.axis('off')
+
+plt.subplot(1,3,2)
+plt.imshow(laplacian_abs, cmap='gray')
+plt.title("Laplacian Image")
+plt.axis('off')
+
+plt.subplot(1,3,3)
+plt.imshow(sharpened, cmap='gray')
+plt.title("Sharpened Image")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# -----------------------------------
+# Display Histograms
+# -----------------------------------
+plt.figure(figsize=(15,4))
+
+plt.subplot(1,3,1)
+plt.hist(gray.ravel(), bins=256, range=[0,256])
+plt.title("Original Histogram")
+
+plt.subplot(1,3,2)
+plt.hist(laplacian_abs.ravel(), bins=256, range=[0,256])
+plt.title("Laplacian Histogram")
+
+plt.subplot(1,3,3)
+plt.hist(sharpened.ravel(), bins=256, range=[0,256])
+plt.title("Sharpened Histogram")
+
+plt.tight_layout()
+plt.show()
+
+print("Laplacian Kernel Used:")
+print(np.array([[0, 1, 0],
+                [1,-4, 1],
+                [0, 1, 0]]))

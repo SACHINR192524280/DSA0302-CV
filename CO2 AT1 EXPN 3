@@ -1,0 +1,75 @@
+# Experiment 3
+# Power-Law (Gamma) Transformation
+
+from google.colab import files
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Upload Image
+uploaded = files.upload()
+
+# Read uploaded image
+image_path = list(uploaded.keys())[0]
+
+# Read image
+img = cv2.imread(image_path)
+
+# Convert to grayscale
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# Normalize image (0 to 1)
+gray_norm = gray / 255.0
+
+# Gamma values
+gamma_values = [0.5, 1.0, 1.5, 2.0]
+
+# Display Original Image
+plt.figure(figsize=(15,8))
+
+plt.subplot(2,3,1)
+plt.imshow(gray, cmap='gray')
+plt.title("Original Image")
+plt.axis("off")
+
+# Apply Gamma Transformation
+for i, gamma in enumerate(gamma_values):
+
+    gamma_corrected = np.power(gray_norm, gamma)
+
+    gamma_corrected = np.uint8(gamma_corrected * 255)
+
+    plt.subplot(2,3,i+2)
+    plt.imshow(gamma_corrected, cmap='gray')
+    plt.title(f"Gamma = {gamma}")
+    plt.axis("off")
+
+plt.tight_layout()
+plt.show()
+
+# Plot Histograms
+plt.figure(figsize=(15,8))
+
+plt.subplot(2,3,1)
+plt.hist(gray.ravel(), bins=256, range=[0,256])
+plt.title("Original Histogram")
+
+for i, gamma in enumerate(gamma_values):
+
+    gamma_corrected = np.power(gray_norm, gamma)
+    gamma_corrected = np.uint8(gamma_corrected * 255)
+
+    plt.subplot(2,3,i+2)
+    plt.hist(gamma_corrected.ravel(), bins=256, range=[0,256])
+    plt.title(f"Gamma = {gamma}")
+
+plt.tight_layout()
+plt.show()
+
+print("Power-Law (Gamma) Transformation Formula:")
+print("s = c × r^γ")
+print("\nwhere")
+print("s = Output intensity")
+print("r = Input intensity")
+print("γ = Gamma value")
+print("c = Constant (taken as 1)")
